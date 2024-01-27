@@ -2,8 +2,8 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: deep-blue; icon-glyph: phone-volume;
 
-const version = 1
-const version2 = "1.0.0"
+const version = 2
+const version2 = "1.0.1"
 
 fm = FileManager.local()
 
