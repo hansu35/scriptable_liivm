@@ -2,10 +2,10 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: deep-blue; icon-glyph: phone-volume;
 
-const version = 3;
+const version = 4;
 const version2 = "1.0.0";
 
-const checkTimeSecond = 600 // 5분 마다 갱신
+const checkTimeSecond = 60 // 5분 마다 갱신
 // fm = FileManager.local()
 fm = FileManager.iCloud();
 
@@ -17,6 +17,13 @@ console.log(minVer);
 if(version < minVer){
 	var code = await new Request(serverContentUrl).loadString();
 	fm.writeString(fm.joinPath(fm.documentsDirectory(), Script.name() + ".js"), code);
+
+	// 위젯에서 데이터를 확인한 시작 작성.
+	let now = new Date()
+	const formatter = new Intl.DateTimeFormat('en-US', { hour: '2-digit', minute: '2-digit'});
+	const formattedTime = formatter.format(now);
+	console.log(formattedTime);
+	drawErrorWidget("업데이트중 "+ version + " -> " + minVer + "앱을 다시 실행해 주시거나 기다려 주세요"+ formattedTime)
 	return 0;
 }
 
@@ -45,22 +52,7 @@ if(!fm.fileExists(accountFilePath)){
 		alert.addAction("확인");
 		await alert.present();
 	} else {
-		let w = new ListWidget();
-	
-		w.setPadding(5,5,5,5);
-		w.backgroundColor = new Color(colors.background);
-		let stack = w.addStack();
-		stack.setPadding(5,5,5,5);
-
-		let lText = stack.addText("설정 파일을 만들어 주세요");
-		lText.textColor = new Color(colors.text.primary);
-		lText.textOpacity = 0.9
-		lText.font = Font.systemFont(16)
-		lText.centerAlignText();
-
-		Script.setWidget(w);
-		w.presentSmall();
-		Script.complete();
+		drawErrorWidget("설정 파일을 만들어 주세요")
 	}
 	return 0
 }
@@ -97,6 +89,27 @@ Script.complete();
 /////////////////
 // 함수들 
 /////////////////
+
+
+function drawErrorWidget(message){
+	let w = new ListWidget();
+	
+	w.setPadding(5,5,5,5);
+	w.backgroundColor = new Color(colors.background);
+	let stack = w.addStack();
+	stack.setPadding(5,5,5,5);
+
+	let lText = stack.addText(message);
+	lText.textColor = new Color(colors.text.primary);
+	lText.textOpacity = 0.9
+	lText.font = Font.systemFont(16)
+	lText.centerAlignText();
+
+	Script.setWidget(w);
+	w.presentSmall();
+	Script.complete();
+}
+
 
 
 // 초를 분으로 변경 75초 -> 1분 15초
@@ -308,9 +321,6 @@ function getRequestBodyString(){
 	let thisMonth = new Date();
 	let thisMonthString = "" + (thisMonth.getYear()+1900) + ((thisMonth.getMonth() > 8)? "": "0") +(thisMonth.getMonth()+1)
 
-	let requestBodyPrefix = 'kTgxzN108I2Wy0yGt6d8djEboDFj5ptz';
-	let requestBodysuffix = 'LplrUcKmM6Lw2iqVbI3qEY0F3qZSesvD';
-
 	var requestObject = {
 		"serviceId":"APIM0030",
 		"data":{
@@ -329,9 +339,8 @@ function getRequestBodyString(){
 	};
 
 	//요청이 필요한 내용중 월만 빼고 나머지는 그대로 작성해주고 요청월을 변경해서 base64인코딩을 해준다. 
-	let raqeustBodyString = requestBodyPrefix + btoa(JSON.stringify(requestObject)) + requestBodysuffix;
+	let raqeustBodyString = addCrc(32) + btoa(JSON.stringify(requestObject)) + addCrc(32);
 
-	console.log(raqeustBodyString);	
 	return raqeustBodyString;
 }
 
@@ -361,7 +370,7 @@ function computeWidgetSize(){
 }
 
 
-
+function addCrc(max){var arrFlag=['N','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','W','R','S','T','U','V','W','X','Y','Z','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9'];var ret="";for(var i=0;i<max;i++){ret=ret+arrFlag[Math.floor(Math.random()*62)+1]}return ret}
 
 
 
